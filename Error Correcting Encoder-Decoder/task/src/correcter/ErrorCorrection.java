@@ -1,12 +1,49 @@
 package correcter;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Random;
 
 public class ErrorCorrection {
-    private String inputString;
+    private String inputString = "";
+    private String pathToTheFile = "send.txt";
+    private String pathToOutput = "received.txt";
 
     ErrorCorrection(String inputString) {
         this.inputString = inputString;
+    }
+
+    private String readFile(String path) {
+        StringBuilder outputFile = new StringBuilder();
+        try (FileInputStream inFile = new FileInputStream(new File(path))) {
+            ArrayList<Character> chars = new ArrayList<>();
+            int inByte = inFile.read();
+            while (inByte != -1) {
+                chars.add((char) inByte);
+                inByte = inFile.read();
+            }
+            Random random = new Random();
+            for (int i = 0; i < chars.size(); i++) {
+                char c = chars.get(i);
+                int mask = random.nextInt(7);
+                char now = (char) (c ^ (char) (1 << mask));
+                outputFile.append(now);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return outputFile.toString();
+    }
+
+    private void writeFile(String data) {
+        try (FileWriter writer = new FileWriter(new File(pathToOutput));) {
+            writer.write(data);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private String triplingMessage(String input) {
@@ -39,11 +76,13 @@ public class ErrorCorrection {
     }
 
     public void callback() {
-        System.out.println(inputString);
+        String output = readFile(pathToTheFile);
+        writeFile(output);
+        /*System.out.println(inputString);
         String errorMessage = triplingMessage(inputString);
         System.out.println(errorMessage);
         String badConnectionString = simulatePoorConnection(errorMessage);
         System.out.println(badConnectionString);
-        System.out.println(decodeString(badConnectionString));
+        System.out.println(decodeString(badConnectionString));*/
     }
 }
